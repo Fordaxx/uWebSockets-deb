@@ -1,0 +1,58 @@
+#!/bin/bash
+set -e
+
+echo "Testing BloomFilter..."
+
+cat > /tmp/test_bloomfilter.cpp << 'EOF'
+#include <uWebSockets/BloomFilter.h>
+#include <cassert>
+#include <vector>
+#include <string>
+#include <algorithm>
+#include <iostream>
+
+std::vector<std::string> commonHeaders = {
+    "accept",
+    "content-type",
+    "host",
+    "user-agent",
+    "cache-control",
+    "connection"
+};
+
+int main() {
+    uWS::BloomFilter bf;
+    unsigned int totalCollisions = 0;
+
+    // Test one-on-one
+    for (int i = 0; i < commonHeaders.size(); i++) {
+        bf.reset();
+        assert(bf.mightHave(commonHeaders[i]) == false);
+
+        bf.add(commonHeaders[i]);
+        assert(bf.mightHave(commonHeaders[i]) == true);
+
+        for (int j = i + 1; j < commonHeaders.size(); j++) {
+            if (bf.mightHave(commonHeaders[j])) {
+                std::cout << commonHeaders[i] << " collides with " << commonHeaders[j] << std::endl;
+                totalCollisions++;
+            }
+        }
+    }
+
+    std::cout << "Total collisions: " << totalCollisions << std::endl;
+    assert(totalCollisions == 0);
+
+    std::cout << "BloomFilter tests PASSED" << std::endl;
+    return 0;
+}
+EOF
+
+echo "Compiling BloomFilter test..."
+g++ -std=c++17 /tmp/test_bloomfilter.cpp -o /tmp/test_bloomfilter || exit 1
+
+echo "Running BloomFilter test..."
+/tmp/test_bloomfilter || exit 1
+
+rm -f /tmp/test_bloomfilter.cpp /tmp/test_bloomfilter
+echo "✓ BloomFilter test completed successfully"

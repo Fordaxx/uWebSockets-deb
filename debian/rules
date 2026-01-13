@@ -1,0 +1,16 @@
+#!/usr/bin/make -f
+
+%:
+	dh $@
+
+override_dh_auto_clean:
+	# empty to skip uSockets build in makefile task default 
+
+override_dh_auto_build:
+	# empty to skip uSockets build in makefile task default 
+
+override_dh_auto_install:
+	$(MAKE) install DESTDIR=$(CURDIR)/debian/tmp prefix=/usr
+
+override_dh_auto_test:
+	# tests running in ci

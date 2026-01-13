@@ -1,0 +1,31 @@
+#!/bin/bash
+set -e
+
+echo "Testing compilation with uWebSockets and libusockets..."
+
+cat > /tmp/test_compilation.cpp << 'EOF'
+#include <uWebSockets/App.h>
+#include <iostream>
+
+int main() {
+    uWS::App().get("/*", [](auto *res, auto *req) {
+        res->end("Hello from uWebSockets!");
+    }).listen(0, [](auto *listen_socket) {
+        if (listen_socket) {
+            std::cout << "Server initialized successfully" << std::endl;
+        }
+    });
+    
+    return 0;
+}
+EOF
+
+echo "Compiling application with libusockets..."
+g++ -std=c++17 \
+    /tmp/test_compilation.cpp \
+    /usr/lib/x86_64-linux-gnu/libusockets.a \
+    -lssl -lcrypto -luv -lstdc++ -lz \
+    -o /tmp/test_app || exit 1
+
+echo "✓ Compilation test completed successfully"
+rm -f /tmp/test_compilation.cpp /tmp/test_app

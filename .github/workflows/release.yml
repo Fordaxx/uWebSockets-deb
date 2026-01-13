@@ -1,0 +1,124 @@
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container: debian:testing
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Install build dependencies
+        run: |
+          apt-get update
+          apt-get install -y \
+            build-essential \
+            debhelper-compat \
+            dpkg-dev \
+            lintian \
+            autopkgtest \
+            autodep8 \
+            wget \
+            curl \
+            ca-certificates
+      
+      - name: Install libusockets-dev
+        run: |
+          LATEST=$(curl -s https://api.github.com/repos/Fordaxx/uSockets-deb/releases/latest | grep -oP 'tag_name": "\K[^"]+')
+          VERSION=${LATEST#v}
+          DEBFILE="libusockets-dev_${VERSION}_amd64.deb"
+          wget -P /tmp https://github.com/Fordaxx/uSockets-deb/releases/download/${LATEST}/${DEBFILE}
+          apt-get install -y /tmp/${DEBFILE}
+      
+      - name: Create upstream tarball
+        run: |
+          VERSION=$(head -1 debian/changelog | sed 's/.*(\([^)]*\)).*/\1/' | cut -d- -f1)
+          cd ..
+          tar --exclude='.git' --exclude='.github' --exclude='debian' -czf uwebsockets_${VERSION}.orig.tar.gz \
+            --transform "s,^uWebSockets-deb,uwebsockets-${VERSION}," uWebSockets-deb
+      
+      - name: Build source and binary packages
+        run: |
+          rm -rf .github
+          dpkg-buildpackage -us -uc
+      
+      - name: Collect artifacts
+        run: |
+          mkdir -p artifacts
+          mv ../*.deb ../*.dsc ../*.tar.* ../*.changes ../*.buildinfo artifacts/
+      
+      - name: Run lintian
+        run: lintian -i artifacts/*.changes
+        continue-on-error: true
+      
+      - name: Run autopkgtest
+        run: |
+          cd artifacts
+          autopkgtest *.dsc -- null
+      
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: debian-packages
+          path: artifacts/*
+
+  create-release:
+    needs: [build]
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Extract version from tag
+        id: version
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/v}
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+          echo "tag=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+      
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: all-artifacts
+      
+      - name: Prepare release files
+        run: |
+          mkdir -p release-files
+          find all-artifacts -type f -exec cp -v {} release-files/ \;
+          echo "Final release files:"
+          ls -lh release-files/
+      
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: Release ${{ steps.version.outputs.tag }}
+          body: |
+            ## libuwebsockets-dev ${{ steps.version.outputs.version }}
+            
+            Header-only C++17 WebSocket library (Debian package).
+            
+            ### Artifacts
+            - **Source package** (.dsc, .orig.tar.gz) for rebuilding
+            - **Binary package** (Architecture: all - works on any platform)
+            
+            ### Installation
+            ```bash
+            # Download and install
+            wget https://github.com/${{ github.repository }}/releases/download/${{ steps.version.outputs.tag }}/libuwebsockets-dev_${{ steps.version.outputs.version }}_all.deb
+            sudo dpkg -i libuwebsockets-dev_${{ steps.version.outputs.version }}_all.deb
+            sudo apt-get install -f
+            ```
+            
+            ### Dependencies
+            - libusockets-dev (>= 0.8.8)
+            - zlib1g-dev (for WebSocket compression)
+          files: release-files/*
+          draft: false
+          prerelease: false

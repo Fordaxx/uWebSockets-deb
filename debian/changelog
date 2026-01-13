@@ -1,0 +1,5 @@
+uwebsockets (20.74.0-1) unstable; urgency=medium
+
+  * Initial release. (Closes: #979861)
+
+ -- Ruslan Dautov <r.dautoff2016@yandex.ru>  Tue, 30 Dec 2025 17:19:18 +0300

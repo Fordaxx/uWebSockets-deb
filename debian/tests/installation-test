@@ -1,0 +1,30 @@
+#!/bin/bash
+set -e
+
+echo "Testing header file installation..."
+
+# Check if main header exists
+if [ ! -f /usr/include/uWebSockets/App.h ]; then
+    echo "ERROR: /usr/include/uWebSockets/App.h not found"
+    exit 1
+fi
+
+echo "Checking for essential headers..."
+HEADERS=(
+    "App.h"
+    "HttpParser.h"
+    "HttpRouter.h"
+    "BloomFilter.h"
+    "WebSocket.h"
+)
+
+for header in "${HEADERS[@]}"; do
+    if [ ! -f "/usr/include/uWebSockets/$header" ]; then
+        echo "ERROR: /usr/include/uWebSockets/$header not found"
+        exit 1
+    fi
+    echo "  ✓ $header"
+done
+
+echo "All essential headers found in /usr/include/uWebSockets/"
+echo "✓ Installation test completed successfully"

@@ -1,0 +1,29 @@
+Source: uwebsockets
+Section: libs
+Priority: optional
+Maintainer: Ruslan Dautov <r.dautoff2016@yandex.ru>
+Build-Depends: debhelper-compat (= 13)
+Standards-Version: 4.7.3.0
+Homepage: https://github.com/uNetworking/uWebSockets
+Vcs-Browser: https://github.com/Fordaxx/uWebSockets-deb
+Vcs-Git: https://github.com/Fordaxx/uWebSockets-deb.git
+Rules-Requires-Root: no
+
+Package: libuwebsockets-dev
+Section: libdevel
+Architecture: all
+Multi-Arch: foreign
+Depends: ${misc:Depends},
+         libusockets-dev (>= 0.8.8)
+Description: Simple, secure & standards compliant web server (C++ headers)
+ µWebSockets is a header-only C++17 library for building high-performance
+ web servers and WebSocket applications.
+ .
+ Features include
+  - Optimized security with TLS 1.3 support
+  - URL router with wildcard and parameter support
+  - Efficient pub/sub for WebSockets
+  - Battle-proven in production (cryptocurrency exchanges)
+ .
+ This package provides the C++ header files.
+
