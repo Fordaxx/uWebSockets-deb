@@ -25,8 +25,9 @@ jobs:
       - name: Run uscan
         id: uscan
         run: |
-          uscan --verbose --report 2>&1 | tee uscan.log
+          uscan --verbose --report > uscan.log 2>&1
           EXIT_CODE=$?
+          cat uscan.log
           if [ $EXIT_CODE -eq 0 ]; then
             echo "new_version=true" >> $GITHUB_OUTPUT
           else
