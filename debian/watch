@@ -1,5 +1,7 @@
-Version: 5
-Template: GitHub
-Owner: uNetworking
-Project: uWebSockets
-Version-Type: STABLE_VERSION
+version=5
+
+opts="\
+  filenamemangle=s/.+\/v?(\d[\d.]*)\.tar\.gz/uwebsockets-$1.tar.gz/,\
+  pgpmode=none" \
+https://github.com/uNetworking/uWebSockets/tags \
+  .*/archive/refs/tags/v?(\d+\.\d+\.\d+)\.tar\.gz
