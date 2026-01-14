@@ -25,15 +25,16 @@ jobs:
       - name: Run uscan
         id: uscan
         run: |
+          set +e
           uscan --verbose --report > uscan.log 2>&1
           EXIT_CODE=$?
+          set -e
           cat uscan.log
           if [ $EXIT_CODE -eq 0 ]; then
             echo "new_version=true" >> $GITHUB_OUTPUT
           else
             echo "new_version=false" >> $GITHUB_OUTPUT
           fi
-          exit 0
 
       - name: Create issue if new version found
         if: steps.uscan.outputs.new_version == 'true'
