@@ -1,4 +1,6 @@
-Version: 5
+Version=5
+
 Template: GitHub
 Owner: uNetworking
 Project: uWebSockets
+Version-Type: STABLE_VERSION
