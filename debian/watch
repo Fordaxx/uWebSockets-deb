@@ -1,7 +1,8 @@
 version=5
 
 opts="\
-  filenamemangle=s/.+\/v?(\d[\d.]*)\.tar\.gz/uwebsockets-$1.tar.gz/,\
+  filenamemangle=s/.*\/v?(\d[\d.]*)\.tar\.gz/uwebsockets-$1.tar.gz/,\
+  dversionmangle=s/-(alpha|beta|rc).*$//,\
   pgpmode=none" \
-https://github.com/uNetworking/uWebSockets/tags \
-  .*/archive/refs/tags/v?(\d+\.\d+\.\d+)\.tar\.gz
+https://github.com/uNetworking/uWebSockets/releases \
+  .*/releases/tag/v(\d+[\d.]+)
