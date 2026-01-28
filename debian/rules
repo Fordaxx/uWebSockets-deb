@@ -12,5 +12,4 @@ override_dh_auto_build:
 override_dh_auto_install:
 	$(MAKE) install DESTDIR=$(CURDIR)/debian/tmp prefix=/usr
 
-override_dh_auto_test:
-	# tests running in ci
+

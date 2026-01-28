@@ -1,103 +1,86 @@
-# libuwebsockets-dev — Debian Package
 
-Debian packaging for µWebSockets — a simple, secure & standards compliant web server for the most demanding of applications.
+<div align="center">
+<img src="https://raw.githubusercontent.com/uNetworking/uWebSockets/master/misc/logo.svg" height="180" /><br>
+<i>Simple, secure</i><sup><a href="https://github.com/uNetworking/uWebSockets/tree/master/fuzzing#fuzz-testing-of-various-parsers-and-mocked-examples">1</a></sup><i> & standards compliant</i><sup><a href="https://unetworking.github.io/uWebSockets.js/report.pdf">2</a></sup><i> web server for the most demanding</i><sup><a href="https://github.com/uNetworking/uWebSockets/tree/master/benchmarks#benchmark-driven-development">3</a></sup><i> of applications.</i> <a href="https://github.com/uNetworking/uWebSockets/blob/master/misc/READMORE.md">Read more...</a>
+<br><br>
 
-## About µWebSockets
+<a href="https://github.com/uNetworking/uWebSockets/releases"><img src="https://img.shields.io/github/v/release/uNetworking/uWebSockets"></a> <a href="https://osv.dev/list?q=uwebsockets&affected_only=true&page=1&ecosystem=OSS-Fuzz"><img src="https://oss-fuzz-build-logs.storage.googleapis.com/badges/uwebsockets.svg" /></a> <img src="https://img.shields.io/badge/est.-2016-green" />
 
-- **Header-only C++17** library for high-performance web servers and WebSocket applications
-- **Built on µSockets** for eventing, networking and cryptography
-- **TLS 1.3** with optimized security and ~95% fuzzing coverage (OSS-Fuzz)
-- **Battle proven**: powers major crypto exchanges handling billions in daily trade volume
-- **Features**: URL router with wildcards, pub/sub for WebSockets, permessage-deflate compression
-- **Apache License 2.0**
+</div>
+<br><br>
 
-**Upstream**: [https://github.com/uNetworking/uWebSockets](https://github.com/uNetworking/uWebSockets)
+### :closed_lock_with_key: Optimized security
+Being meticulously optimized for speed and memory footprint, µWebSockets is fast enough to do encrypted TLS 1.3 messaging quicker than most alternative servers can do even unencrypted, cleartext messaging<sup><a href="https://github.com/uNetworking/uWebSockets/tree/master/benchmarks#benchmark-driven-development">3</a></sup>.
 
-## Quick Start
+Furthermore, we partake in Google's OSS-Fuzz with a ~95% daily fuzzing coverage<sup><a href="https://github.com/uNetworking/uWebSockets/blob/master/misc/Screenshot_20210915-004009.png?raw=true">4</a></sup> with no sanitizer issues. LGTM scores us flawless A+ from having zero CodeQL alerts and we compile with pedantic warning levels.
 
-### Installing
 
-```bash
-sudo dpkg -i libuwebsockets-dev_*.deb
-sudo apt-get install -f
+### :arrow_forward: Rapid scripting
+µWebSockets is written entirely in C & C++ but has a seamless integration for Node.js backends. This allows for rapid scripting of powerful apps, using widespread competence. See <a href="https://github.com/uNetworking/uWebSockets.js">µWebSockets.js</a>.
+
+### :crossed_swords: Battle proven
+We've been fully standards compliant with a perfect Autobahn|Testsuite score since 2016<sup><a href="https://unetworking.github.io/uWebSockets.js/report.pdf">2</a></sup>. µWebSockets powers many of the biggest crypto exchanges in the world, handling trade volumes of multiple billions of USD every day. If you trade crypto, chances are you do so via µWebSockets.
+
+### :battery: Batteries included
+Designed around a convenient URL router with wildcard & parameter support - paired with efficient pub/sub features for WebSockets. µWebSockets should be the obvious, complete starting point for any real-time web project with high demands.
+
+Start building your Http & WebSocket apps in no time; <a href="https://github.com/uNetworking/uWebSockets/blob/master/misc/READMORE.md">read the user manual</a> and <a href="https://github.com/uNetworking/uWebSockets/tree/master/examples">see examples</a>. You can browse our <a href="https://unetworking.github.io/uWebSockets.js/generated/">TypeDoc</a> for a quick overview.
+
+```c++
+/* One app per thread; spawn as many as you have CPU-cores and let uWS share the listening port */
+uWS::SSLApp({
+
+    /* These are the most common options, fullchain and key. See uSockets for more options. */
+    .cert_file_name = "cert.pem",
+    .key_file_name = "key.pem"
+    
+}).get("/hello/:name", [](auto *res, auto *req) {
+
+    /* You can efficiently stream huge files too */
+    res->writeStatus("200 OK")
+       ->writeHeader("Content-Type", "text/html; charset=utf-8")
+       ->write("<h1>Hello ")
+       ->write(req->getParameter("name"))
+       ->end("!</h1>");
+    
+}).ws<UserData>("/*", {
+
+    /* Just a few of the available handlers */
+    .open = [](auto *ws) {
+        ws->subscribe("oh_interesting_subject");
+    },
+    .message = [](auto *ws, std::string_view message, uWS::OpCode opCode) {
+        ws->send(message, opCode);
+    }
+    
+}).listen(9001, [](auto *listenSocket) {
+
+    if (listenSocket) {
+        std::cout << "Listening on port " << 9001 << std::endl;
+    } else {
+        std::cout << "Failed to load certs or to bind to port" << std::endl;
+    }
+    
+}).run();
 ```
+### :briefcase: Commercially supported
+<a href="https://github.com/uNetworking">uNetworking AB</a> is a Swedish consulting & contracting company dealing with anything related to µWebSockets; development, support and customer success.
 
-### Building from source
+Don't hesitate <a href="mailto:alexhultman@gmail.com">sending a mail</a> if you're building something large, in need of advice or having other business inquiries in mind. We'll figure out what's best for both parties and make sure you're not falling into common pitfalls.
 
-```bash
-sudo apt-get install debhelper-compat build-essential dpkg-dev
-dpkg-source -x libuwebsockets_*.dsc
-cd libuwebsockets-*/
-dpkg-buildpackage -b -us -uc
-sudo dpkg -i ../libuwebsockets-dev_*.deb
-```
+Special thanks to BitMEX, Bitfinex, Google, Coinbase, Bitwyre, AppDrag and deepstreamHub for allowing the project itself to thrive on GitHub since 2016 - this project would not be possible without these beautiful companies.
 
-## Package Information
+### :wrench: Customizable architecture
+µWebSockets builds on <a href="https://github.com/uNetworking/uSockets">µSockets</a>, a foundation library implementing eventing, networking and cryptography in three different layers. Every layer has multiple implementations and you control the compiled composition with flags. There are currently five event-loop integrations; libuv, ASIO, GCD and raw epoll/kqueue.
 
-| Field | Value |
-|-------|-------|
-| **Package** | libuwebsockets-dev |
-| **Version** | 20.74.0-1 |
-| **Section** | libdevel |
-| **Architecture** | all (header-only) |
-| **Multi-Arch** | foreign |
-| **Maintainer** | Ruslan Dautov |
-| **Build-Depends** | debhelper-compat (= 13) |
-| **Depends** | libusockets-dev (>= 0.8.8) |
+In a nutshell:
 
-## Debian Packaging Files
+* `WITH_WOLFSSL=1 WITH_LIBUV=1 make examples` builds examples utilizing WolfSSL and libuv
+* `WITH_OPENSSL=1 make examples` builds examples utilizing OpenSSL and the native kernel
 
-```
-debian/
-├── changelog          # Version history (20.74.0-1)
-├── control            # Package metadata and dependencies
-├── copyright          # Apache-2.0 license info
-├── libuwebsockets-dev.install  # Header files installation
-├── rules              # Build instructions
-├── source/format      # 3.0 (quilt)
-├── watch              # GitHub upstream release tracking
-└── tests/
-    ├── control              # Autopkgtest configuration
-    ├── installation-test    # Verify headers installed
-    ├── compilation-test     # Test linking with libusockets
-    ├── bloomfilter-test     # BloomFilter unit test
-    └── httpparser-test      # HttpParser unit test
-```
+See µSockets for an up-to-date list of flags and a more detailed explanation.
 
-## Autopkgtest
+### :handshake: Permissively licensed
+Intellectual property, all rights reserved.
 
-Package includes comprehensive test suite:
-
-```bash
-autopkgtest libuwebsockets-dev_*.deb -- null
-```
-
-Tests verify:
-- Header file installation (`installation-test`)
-- Compilation with libusockets (`compilation-test`)
-- BloomFilter functionality (`bloomfilter-test`)
-- HttpParser functionality (`httpparser-test`)
-
-## Contributing
-
-1. Fork repository
-2. Modify `debian/` directory
-3. Update `debian/changelog` with `dch`
-4. Test with `dpkg-buildpackage -b -us -uc`
-5. Run `lintian` on resulting `.changes` file
-6. Submit pull request
-
-## License
-
-- **Upstream**: Apache License 2.0
-- **Debian packaging**: Apache License 2.0
-- See `debian/copyright` for full details
-
-## Support
-
-- **Packaging issues**: [https://github.com/Fordaxx/uWebSockets-deb/issues](https://github.com/Fordaxx/uWebSockets-deb/issues)
-- **Library issues**: [https://github.com/uNetworking/uWebSockets/issues](https://github.com/uNetworking/uWebSockets/issues)
-
----
-
-**Maintainer**: Ruslan Dautov <r.dautoff2016@yandex.ru>
+Where such explicit notice is given, source code is licensed Apache License 2.0 which is a permissive OSI-approved license with very few limitations. Modified "forks" should be of nothing but licensed source code, and be made available under another product name. If you're uncertain about any of this, please ask before assuming.
